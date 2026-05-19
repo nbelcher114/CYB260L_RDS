@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Launch an EC2 instance with Apache installed
+Resources:
+ MyEC2Instance:
+   Type: AWS::EC2::Instance
+   Properties:
+     ImageId: ami-0a70b9d193ae8a799
+     InstanceType: t2.micro
+     KeyName: my-key-pair
+     SecurityGroupIds:
+       - !Ref MySecurityGroup
+     UserData:
+       Fn::Base64: !Sub |
+         #!/bin/bash
+         yum update -y
+         yum install -y httpd
+         systemctl start httpd
+         systemctl enable httpd
+ MySecurityGroup:
+   Type: AWS::EC2::SecurityGroup
+   Properties:
+     GroupDescription: Enable HTTP and SSH access
+     SecurityGroupIngress:
+       - IpProtocol: tcp
+         FromPort: 22
+         ToPort: 22
+         CidrIp: 0.0.0.0/0
+       - IpProtocol: tcp
+         FromPort: 80
+         ToPort: 80
+         CidrIp: 0.0.0.0/0
+Outputs:
+ InstanceId:
+   Description: The ID of the EC2 instance
+   Value: !Ref MyEC2Instance
