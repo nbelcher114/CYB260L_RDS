@@ -1,10 +1,20 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  AWS CloudFormation template that creates a VPC spanning three
-  Availability Zones in the us-west-2 region and deploys
-  an Amazon RDS MySQL instance.
+  AWS CloudFormation Update template that creates a VPC spanning three
+  Availability Zones in the US-West-2 region.
 
 Resources:
+  RdsInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      VPCSecurityGroups:
+      - <SECURITY-GROUP-ID>
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t3.micro
+      DBInstanceIdentifier: playground-db
+      Engine: MySQL
+      MasterUsername: Admin
+      MasterUserPassword: CloudAcademy123!
 
   # VPC Resource
   StudentVPC:
@@ -107,49 +117,6 @@ Resources:
       SubnetId: !Ref PublicSubnetAZ3
       RouteTableId: !Ref PublicRouteTable
 
-  # Security Group for RDS
-  RDSSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Security group for MySQL RDS instance
-      VpcId: !Ref StudentVPC
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: 10.0.0.0/16
-      Tags:
-        - Key: Name
-          Value: RDS-SG-ninbel9067
-
-  # RDS Subnet Group
-  RDSSubnetGroup:
-    Type: AWS::RDS::DBSubnetGroup
-    Properties:
-      DBSubnetGroupDescription: Subnet group for RDS instance
-      SubnetIds:
-        - !Ref PublicSubnetAZ1
-        - !Ref PublicSubnetAZ2
-        - !Ref PublicSubnetAZ3
-      Tags:
-        - Key: Name
-          Value: RDS-SubnetGroup-ninbel9067
-
-  # Amazon RDS MySQL Instance
-  RdsInstance:
-    Type: AWS::RDS::DBInstance
-    Properties:
-      DBInstanceIdentifier: playground-db
-      Engine: mysql
-      DBInstanceClass: db.t3.micro
-      AllocatedStorage: '5'
-      MasterUsername: Admin
-      MasterUserPassword: CloudAcademy123!
-      VPCSecurityGroups:
-        - !GetAtt RDSSecurityGroup.GroupId
-      DBSubnetGroupName: !Ref RDSSubnetGroup
-      PubliclyAccessible: false
-
 Outputs:
 
   VPCId:
@@ -171,11 +138,3 @@ Outputs:
   Subnet3:
     Description: Subnet in us-west-2c
     Value: !Ref PublicSubnetAZ3
-
-  RDSInstanceId:
-    Description: RDS Instance Identifier
-    Value: !Ref RdsInstance
-
-  RDSEndpoint:
-    Description: RDS Endpoint Address
-    Value: !GetAtt RdsInstance.Endpoint.Address
